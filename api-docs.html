@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HSH Open API 接口文档</title>
+<style>
+:root {
+  --primary: #4f6ef7;
+  --primary-light: #eef1ff;
+  --bg: #f7f8fc;
+  --card-bg: #fff;
+  --text: #2c3e50;
+  --text-secondary: #6b7c93;
+  --border: #e4e8ee;
+  --success: #27ae60;
+  --warning: #f39c12;
+  --danger: #e74c3c;
+  --tag-get: #61affe;
+  --tag-post: #49cc90;
+  --tag-callback: #f93e3e;
+  --sidebar-w: 280px;
+  --header-h: 60px;
+  --radius: 8px;
+  --shadow: 0 2px 12px rgba(0,0,0,.06);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; background: var(--bg); color: var(--text); line-height:1.7; }
+
+.header { position:fixed; top:0; left:0; right:0; height:var(--header-h); background:#fff; border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 24px; z-index:100; }
+.header .logo { font-size:20px; font-weight:700; color:var(--primary); display:flex; align-items:center; gap:10px; }
+.header .logo svg { width:28px; height:28px; }
+.header .version { background:var(--primary); color:#fff; font-size:11px; padding:2px 8px; border-radius:10px; margin-left:8px; }
+.search-box { margin-left:auto; position:relative; }
+.search-box input { width:280px; padding:8px 16px 8px 36px; border:1px solid var(--border); border-radius:20px; font-size:14px; outline:none; transition:.2s; }
+.search-box input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(79,110,247,.15); }
+.search-box .icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-secondary); }
+.search-results { position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid var(--border); border-radius:var(--radius); margin-top:4px; max-height:300px; overflow-y:auto; display:none; z-index:200; box-shadow:var(--shadow); }
+.search-results.active { display:block; }
+.search-results .sr-item { display:block; padding:8px 16px; color:var(--text); text-decoration:none; font-size:13px; cursor:pointer; }
+.search-results .sr-item:hover { background:var(--primary-light); }
+.search-results .sr-cat { font-size:11px; color:var(--text-secondary); padding:4px 16px; background:var(--bg); }
+
+.sidebar { position:fixed; top:var(--header-h); left:0; bottom:0; width:var(--sidebar-w); background:#fff; border-right:1px solid var(--border); overflow-y:auto; padding:16px 0; z-index:90; transition:transform .3s; }
+.sidebar::-webkit-scrollbar { width:4px; }
+.sidebar::-webkit-scrollbar-thumb { background:#ddd; border-radius:2px; }
+.nav-group { margin-bottom:8px; }
+.nav-group-title { font-size:12px; font-weight:600; color:var(--text-secondary); padding:8px 20px; text-transform:uppercase; letter-spacing:.5px; display:flex; align-items:center; gap:6px; cursor:pointer; }
+.nav-group-title:hover { color:var(--primary); }
+.nav-group-title .arrow { transition:transform .2s; font-size:10px; }
+.nav-group.collapsed .arrow { transform:rotate(-90deg); }
+.nav-group.collapsed .nav-items { display:none; }
+.nav-items { padding:2px 0; }
+.nav-item { display:flex; align-items:center; padding:7px 20px 7px 28px; font-size:13px; color:var(--text); text-decoration:none; cursor:pointer; transition:.15s; border-left:3px solid transparent; gap:8px; }
+.nav-item:hover { background:var(--primary-light); color:var(--primary); }
+.nav-item.active { background:var(--primary-light); color:var(--primary); border-left-color:var(--primary); font-weight:500; }
+.method-tag { font-size:10px; font-weight:600; padding:1px 6px; border-radius:3px; color:#fff; white-space:nowrap; }
+.method-tag.get { background:var(--tag-get); }
+.method-tag.post { background:var(--tag-post); }
+.method-tag.callback { background:var(--tag-callback); }
+.nav-item .label { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+.main { margin-left:var(--sidebar-w); margin-top:var(--header-h); padding:24px 32px 80px; max-width:900px; }
+
+.section { margin-bottom:32px; }
+.section-header { display:flex; align-items:center; gap:12px; margin-bottom:16px; padding-bottom:12px; border-bottom:2px solid var(--border); }
+.section-header h2 { font-size:22px; font-weight:700; }
+.section-header .badge { background:var(--primary); color:#fff; font-size:11px; padding:3px 10px; border-radius:12px; }
+
+.api-card { background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:20px; overflow:hidden; transition:.2s; }
+.api-card:hover { box-shadow:var(--shadow); }
+.api-card-header { display:flex; align-items:center; padding:16px 20px; cursor:pointer; gap:12px; }
+.api-card-header .method { font-size:12px; font-weight:700; padding:4px 10px; border-radius:4px; color:#fff; min-width:56px; text-align:center; }
+.api-card-header .method.post { background:var(--tag-post); }
+.api-card-header .method.callback { background:var(--tag-callback); }
+.api-card-header .title { font-size:16px; font-weight:600; flex:1; }
+.api-card-header .path { font-size:13px; color:var(--text-secondary); font-family:'SF Mono',Monaco,Consolas,monospace; }
+.api-card-header .toggle { color:var(--text-secondary); transition:transform .2s; font-size:18px; }
+.api-card.open .api-card-header .toggle { transform:rotate(180deg); }
+.api-card-body { display:none; padding:0 20px 20px; }
+.api-card.open .api-card-body { display:block; }
+
+.info-block { margin-bottom:16px; }
+.info-block .lbl { font-size:13px; font-weight:600; color:var(--text-secondary); margin-bottom:6px; }
+.info-block .desc { font-size:14px; color:var(--text); }
+.info-block .url { font-family:'SF Mono',Monaco,Consolas,monospace; font-size:13px; background:var(--bg); padding:8px 12px; border-radius:4px; word-break:break-all; border:1px solid var(--border); }
+.info-block .notice { background:#fff8e1; border-left:3px solid var(--warning); padding:10px 14px; border-radius:0 var(--radius) var(--radius) 0; font-size:13px; color:#8a6d3b; }
+
+.api-table { width:100%; border-collapse:collapse; font-size:13px; margin:8px 0; }
+.api-table th { background:var(--bg); padding:8px 12px; text-align:left; font-weight:600; color:var(--text-secondary); border:1px solid var(--border); white-space:nowrap; }
+.api-table td { padding:8px 12px; border:1px solid var(--border); }
+.api-table td:first-child { font-family:'SF Mono',Monaco,Consolas,monospace; font-size:12px; color:var(--primary); }
+.api-table .required-yes { color:var(--danger); font-weight:600; }
+.api-table .required-no { color:var(--text-secondary); }
+
+.code-block { position:relative; margin:8px 0; }
+.code-block pre { background:#1e2a3a; color:#e2e8f0; padding:16px; border-radius:var(--radius); font-family:'SF Mono',Monaco,Consolas,monospace; font-size:13px; overflow-x:auto; line-height:1.6; }
+.code-block .copy-btn { position:absolute; top:8px; right:8px; background:rgba(255,255,255,.1); color:#ccc; border:none; padding:4px 10px; border-radius:4px; font-size:12px; cursor:pointer; }
+.code-block .copy-btn:hover { background:rgba(255,255,255,.2); }
+.code-block .lang-tag { position:absolute; top:8px; right:80px; font-size:11px; color:#8899aa; }
+
+.tab-bar { display:flex; border-bottom:2px solid var(--border); margin-bottom:12px; }
+.tab-bar .tab { padding:8px 16px; font-size:13px; cursor:pointer; color:var(--text-secondary); border-bottom:2px solid transparent; margin-bottom:-2px; transition:.15s; }
+.tab-bar .tab:hover { color:var(--primary); }
+.tab-bar .tab.active { color:var(--primary); border-bottom-color:var(--primary); font-weight:600; }
+.tab-content { display:none; }
+.tab-content.active { display:block; }
+
+.steps { counter-reset:step; padding-left:0; list-style:none; }
+.steps li { counter-increment:step; padding:8px 0 8px 40px; position:relative; font-size:14px; }
+.steps li::before { content:counter(step); position:absolute; left:0; top:6px; width:26px; height:26px; background:var(--primary); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; }
+
+@media (max-width:900px) {
+  .sidebar { transform:translateX(-100%); }
+  .sidebar.open { transform:translateX(0); }
+  .main { margin-left:0; padding:16px; }
+  .search-box input { width:180px; }
+  .menu-toggle { display:block !important; }
+}
+.menu-toggle { display:none; background:none; border:none; font-size:24px; cursor:pointer; margin-right:12px; }
+
+.back-top { position:fixed; bottom:30px; right:30px; width:40px; height:40px; background:var(--primary); color:#fff; border:none; border-radius:50%; cursor:pointer; font-size:18px; display:none; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(79,110,247,.3); z-index:200; }
+.back-top.show { display:flex; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">&#9776;</button>
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    HSH Open API
+    <span class="version">v1.0</span>
+  </div>
+  <div class="search-box">
+    <span class="icon">&#128269;</span>
+    <input type="text" id="searchInput" placeholder="搜索接口名称、路径..." autocomplete="off">
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</header>
+
+<nav class="sidebar" id="sidebar">
+  <div class="nav-group">
+    <div class="nav-group-title" onclick="toggleGroup(this)"><span class="arrow">&#9660;</span> 签名认证</div>
+    <div class="nav-items">
+      <a class="nav-item" data-target="sec-rsa-auth" onclick="navScrollTo('sec-rsa-auth')"><span class="method-tag post">AUTH</span><span class="label">RSA 签名认证</span></a>
+      <a class="nav-item" data-target="sec-callback-auth" onclick="navScrollTo('sec-callback-auth')"><span class="method-tag callback">AUTH</span><span class="label">回调验签机制</span></a>
+    </div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title" onclick="toggleGroup(this)"><span class="arrow">&#9660;</span> 设备管理</div>
+    <div class="nav-items">
+      <a class="nav-item" data-target="api-getDevicesInfo" onclick="navScrollTo('api-getDevicesInfo')"><span class="method-tag post">POST</span><span class="label">查询单个设备信息</span></a>
+      <a class="nav-item" data-target="api-getAllDeviceCode" onclick="navScrollTo('api-getAllDeviceCode')"><span class="method-tag post">POST</span><span class="label">所有设备信息</span></a>
+      <a class="nav-item" data-target="api-getAllDeviceNetStatusNewUpdate" onclick="navScrollTo('api-getAllDeviceNetStatusNewUpdate')"><span class="method-tag post">POST</span><span class="label">查询最近上下线设备</span></a>
+      <a class="nav-item" data-target="api-getDeviceNetLog" onclick="navScrollTo('api-getDeviceNetLog')"><span class="method-tag post">POST</span><span class="label">查询设备网络记录</span></a>
+      <a class="nav-item" data-target="api-openDeviceDoor" onclick="navScrollTo('api-openDeviceDoor')"><span class="method-tag post">POST</span><span class="label">设备开门</span></a>
+      <a class="nav-item" data-target="api-forbiddenDevice" onclick="navScrollTo('api-forbiddenDevice')"><span class="method-tag post">POST</span><span class="label">锁定/解锁设备</span></a>
+      <a class="nav-item" data-target="api-rebootDevices" onclick="navScrollTo('api-rebootDevices')"><span class="method-tag post">POST</span><span class="label">重启设备</span></a>
+    </div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title" onclick="toggleGroup(this)"><span class="arrow">&#9660;</span> 回调通知</div>
+    <div class="nav-items">
+      <a class="nav-item" data-target="api-callback-door-open" onclick="navScrollTo('api-callback-door-open')"><span class="method-tag callback">CB</span><span class="label">设备开门通知</span></a>
+      <a class="nav-item" data-target="api-callback-door-close" onclick="navScrollTo('api-callback-door-close')"><span class="method-tag callback">CB</span><span class="label">设备关门通知</span></a>
+      <a class="nav-item" data-target="api-callback-goods-review" onclick="navScrollTo('api-callback-goods-review')"><span class="method-tag callback">CB</span><span class="label">新品审核结果通知</span></a>
+      <a class="nav-item" data-target="api-callback-order" onclick="navScrollTo('api-callback-order')"><span class="method-tag callback">CB</span><span class="label">订单回调</span></a>
+    </div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title" onclick="toggleGroup(this)"><span class="arrow">&#9660;</span> 商品管理</div>
+    <div class="nav-items">
+      <a class="nav-item" data-target="api-searchGoods" onclick="navScrollTo('api-searchGoods')"><span class="method-tag post">POST</span><span class="label">查询云库商品</span></a>
+      <a class="nav-item" data-target="api-getGoodsDetailInfo" onclick="navScrollTo('api-getGoodsDetailInfo')"><span class="method-tag post">POST</span><span class="label">查询商品详细信息</span></a>
+      <a class="nav-item" data-target="api-upload_photo" onclick="navScrollTo('api-upload_photo')"><span class="method-tag post">POST</span><span class="label">上传图片（抠图）</span></a>
+      <a class="nav-item" data-target="api-submitGood" onclick="navScrollTo('api-submitGood')"><span class="method-tag post">POST</span><span class="label">新品建模申请</span></a>
+      <a class="nav-item" data-target="api-getSubmitGoodsList" onclick="navScrollTo('api-getSubmitGoodsList')"><span class="method-tag post">POST</span><span class="label">查询新品申请列表</span></a>
+      <a class="nav-item" data-target="api-onlineDeviceFloorGood" onclick="navScrollTo('api-onlineDeviceFloorGood')"><span class="method-tag post">POST</span><span class="label">商品上架到货道</span></a>
+      <a class="nav-item" data-target="api-batchOnlineDeviceFloorGood" onclick="navScrollTo('api-batchOnlineDeviceFloorGood')"><span class="method-tag post">POST</span><span class="label">批量上架</span></a>
+      <a class="nav-item" data-target="api-offlineDeviceFloorGood" onclick="navScrollTo('api-offlineDeviceFloorGood')"><span class="method-tag post">POST</span><span class="label">商品下架</span></a>
+      <a class="nav-item" data-target="api-batchOfflineDeviceFloorGood" onclick="navScrollTo('api-batchOfflineDeviceFloorGood')"><span class="method-tag post">POST</span><span class="label">批量下架</span></a>
+      <a class="nav-item" data-target="api-getDeviceFloorGood" onclick="navScrollTo('api-getDeviceFloorGood')"><span class="method-tag post">POST</span><span class="label">查询出售中商品</span></a>
+    </div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title" onclick="toggleGroup(this)"><span class="arrow">&#9660;</span> 订单管理</div>
+    <div class="nav-items">
+      <a class="nav-item" data-target="api-getOnlineGoodsByOrderCode" onclick="navScrollTo('api-getOnlineGoodsByOrderCode')"><span class="method-tag post">POST</span><span class="label">订单商品上架快照</span></a>
+    </div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title" onclick="toggleGroup(this)"><span class="arrow">&#9660;</span> 理货管理</div>
+    <div class="nav-items">
+      <a class="nav-item" data-target="api-getTallyList" onclick="navScrollTo('api-getTallyList')"><span class="method-tag post">POST</span><span class="label">查询理货记录列表</span></a>
+      <a class="nav-item" data-target="api-getTallyDetail" onclick="navScrollTo('api-getTallyDetail')"><span class="method-tag post">POST</span><span class="label">查询理货详情</span></a>
+    </div>
+  </div>
+</nav>
+
+<div class="main" id="mainContent">
+  <div style="background:#fff0f0;border:1px solid #e74c3c;border-radius:8px;padding:12px 20px;margin-bottom:24px;color:#e74c3c;font-size:14px;font-weight:600;text-align:center">文档中接口地址为样例，详细接口地址请咨询对接人</div>
+
+  <!-- RSA签名认证 -->
+  <section class="section" id="sec-rsa-auth">
+    <div class="section-header"><h2>RSA 签名认证</h2><span class="badge">鉴权</span></div>
+    <div class="info-block"><div class="desc">本平台采用 <strong>RSA 签名认证机制</strong>，无需登录账号密码，使用私钥对请求签名，平台使用公钥验证签名有效性。</div></div>
+    <div class="info-block">
+      <div class="lbl">签名 Header 参数</div>
+      <table class="api-table">
+        <thead><tr><th>参数</th><th>Header 名称</th><th>必传</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>app_id</td><td>X-App-Id</td><td class="required-yes">是</td><td>由平台分配的 App ID</td></tr>
+          <tr><td>timestamp</td><td>X-Timestamp</td><td class="required-yes">是</td><td>当前时间戳（毫秒），有效期 ±5 分钟</td></tr>
+          <tr><td>nonce</td><td>X-Nonce</td><td class="required-yes">是</td><td>随机字符串（建议 UUID）</td></tr>
+          <tr><td>signature</td><td>X-Signature</td><td class="required-yes">是</td><td>RSA 签名值，Base64 编码</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="info-block">
+      <div class="lbl">待签名字符串格式</div>
+      <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><pre>待签名字符串 = app_id + "|" + timestamp + "|" + nonce + "|" + normalizedRequestBody
+
+Body 规范化: JSON key 按字典序排序，紧凑格式输出
+GET请求 body 为空，末尾为空字符串</pre></div>
+    </div>
+    <div class="info-block">
+      <div class="lbl">代码示例</div>
+      <div class="tab-bar">
+        <div class="tab active" onclick="switchTab(this,'rsa-code')">Java</div>
+        <div class="tab" onclick="switchTab(this,'rsa-code')">Python</div>
+        <div class="tab" onclick="switchTab(this,'rsa-code')">Node.js</div>
+      </div>
+      <div class="tab-content rsa-code active">
+        <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><pre>String signStr = APP_ID + "|" + timestamp + "|" + nonce + "|" + requestBody;
+byte[] keyBytes = Base64.getDecoder().decode(PRIVATE_KEY);
+PrivateKey privateKey = KeyFactory.getInstance("RSA")
+    .generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
+Signature sig = Signature.getInstance("SHA256withRSA");
+sig.initSign(privateKey);
+sig.update(signStr.getBytes("UTF-8"));
+String result = Base64.getEncoder().encodeToString(sig.sign());</pre></div>
+      </div>
+      <div class="tab-content rsa-code">
+        <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><pre>from Crypto.PublicKey import RSA
+from Crypto.Signature import pkcs1_15
+from Crypto.Hash import SHA256
+import base64
+
+sign_str = f"{APP_ID}|{timestamp}|{nonce}|{request_body}"
+private_key = RSA.import_key(base64.b64decode(PRIVATE_KEY))
+h = SHA256.new(sign_str.encode('utf-8'))
+signature = base64.b64encode(pkcs1_15.new(private_key).sign(h)).decode()</pre></div>
+      </div>
+      <div class="tab-content rsa-code">
+        <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><pre>const crypto = require('crypto');
+const signStr = `${APP_ID}|${timestamp}|${nonce}|${requestBody}`;
+const privateKey = Buffer.from(PRIVATE_KEY, 'base64');
+const sign = crypto.createSign('RSA-SHA256');
+sign.update(signStr);
+const signature = sign.sign(privateKey, 'base64');</pre></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 回调验签 -->
+  <section class="section" id="sec-callback-auth">
+    <div class="section-header"><h2>平台回调验签机制</h2><span class="badge">鉴权</span></div>
+    <div class="info-block">
+      <div class="lbl">密钥关系</div>
+      <table class="api-table">
+        <thead><tr><th>场景</th><th>签名方</th><th>验签方</th><th>您需要持有</th></tr></thead>
+        <tbody>
+          <tr><td>调用平台 API</td><td>您（您的私钥）</td><td>平台（您的公钥）</td><td>您的私钥</td></tr>
+          <tr><td>接收平台回调</td><td>平台（平台私钥）</td><td>您（平台公钥）</td><td>平台公钥</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="info-block">
+      <div class="lbl">回调 HTTP Headers</div>
+      <table class="api-table">
+        <thead><tr><th>参数</th><th>Header 名称</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>app_id</td><td>X-App-Id</td><td>您的 App ID</td></tr>
+          <tr><td>timestamp</td><td>X-Timestamp</td><td>时间戳（毫秒）</td></tr>
+          <tr><td>nonce</td><td>X-Nonce</td><td>随机字符串</td></tr>
+          <tr><td>signature</td><td>X-Signature</td><td>平台签名</td></tr>
+          <tr><td>event</td><td>X-Event</td><td>回调事件类型</td></tr>
+          <tr><td>sequenceId</td><td>X-Sequence-Id</td><td>序列号（幂等处理）</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="info-block">
+      <div class="lbl">回调重试机制</div>
+      <div class="desc">失败后自动重试，最大 3 次，间隔递增（1s、2s、3s）</div>
+    </div>
+  </section>
+
+  <!-- 设备管理 -->
+  <section class="section" id="sec-device">
+    <div class="section-header"><h2>设备管理</h2><span class="badge">7 个接口</span></div>
+
+    <div class="api-card open" id="api-getDevicesInfo">
+      <div class="api-card-header" onclick="toggleCard(this)"><span class="method post">POST</span><span class="title">查询单个设备信息</span><span class="path">/hiApi/getDevicesInfo</span><span class="toggle">&#9660;</span></div>
+      <div class="api-card-body">
+        <div class="info-block"><div class="lbl">简要描述</div><div class="desc">获取单个设备实时信息</div></div>
+        <div class="info-block"><div class="lbl">请求URL</div><div class="url">https://www.hsh.com/hiApi/getDevicesInfo</div></div>
+        <div class="info-block">
+          <div class="lbl">请求参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>必选</th><th>描述</th></tr></thead><tbody>
+            <tr><td>deviceCode</td><td>string</td><td class="required-yes">是</td><td>设备ID列表（多个用逗号隔开）</td></tr>
+            <tr><td>companyId</td><td>int</td><td class="required-yes">是</td><td>企业ID</td></tr>
+            <tr><td colspan="4" style="color:var(--text-secondary);text-align:center">+ 公共请求参数（nonceStr, requestSerial, timeStamp, sign）</td></tr>
+          </tbody></table>
+        </div>
+        <div class="info-block">
+          <div class="lbl">返回参数说明</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>描述</th></tr></thead><tbody>
+            <tr><td>code</td><td>int</td><td>设备活码</td></tr>
+            <tr><td>netStatus</td><td>int</td><td>0未知 2离线 1在线</td></tr>
+            <tr><td>eleStatus</td><td>int</td><td>0未知 2断电 1通电</td></tr>
+            <tr><td>deviceStatus</td><td>int</td><td>0正常 1限制使用</td></tr>
+            <tr><td>isForbidden</td><td>int</td><td>0未锁定 1锁定</td></tr>
+            <tr><td>status</td><td>int</td><td>1已出厂，其他需激活</td></tr>
+            <tr><td>lockStatus</td><td>int</td><td>0未知 2开锁 1关锁</td></tr>
+            <tr><td>isOpend</td><td>int</td><td>0未知 2关门 1开门</td></tr>
+            <tr><td>cameraStatues</td><td>int</td><td>二进制1正常0异常</td></tr>
+            <tr><td>deviceinfo</td><td>string</td><td>JSON: productType, adEnabled, isRemoteControlAir</td></tr>
+            <tr><td>address</td><td>string</td><td>地址</td></tr>
+            <tr><td>simCardNumber</td><td>string</td><td>物联网卡卡号</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-card" id="api-getAllDeviceCode">
+      <div class="api-card-header" onclick="toggleCard(this)"><span class="method post">POST</span><span class="title">所有设备信息</span><span class="path">/hiApi/getAllDeviceCode</span><span class="toggle">&#9660;</span></div>
+      <div class="api-card-body">
+        <div class="info-block"><div class="lbl">简要描述</div><div class="desc">批量获取设备实时信息</div></div>
+        <div class="info-block"><div class="lbl">请求URL</div><div class="url">https://www.hsh.com/hiApi/getAllDeviceCode</div></div>
+        <div class="info-block">
+          <div class="lbl">请求参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>必选</th><th>描述</th></tr></thead><tbody>
+            <tr><td>companyId</td><td>int</td><td class="required-yes">是</td><td>公司id</td></tr>
+            <tr><td>status</td><td>int</td><td class="required-no">否</td><td>过滤：1门锁异常 2断电断网 3摄像头异常 4被禁用 5SIM临期</td></tr>
+            <tr><td>start</td><td>int</td><td class="required-no">否</td><td>分页开始</td></tr>
+            <tr><td>length</td><td>int</td><td class="required-no">否</td><td>分页长度</td></tr>
+            <tr><td colspan="4" style="color:var(--text-secondary);text-align:center">+ 公共请求参数</td></tr>
+          </tbody></table>
+        </div>
+        <div class="info-block">
+          <div class="lbl">返回参数说明</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>描述</th></tr></thead><tbody>
+            <tr><td>code</td><td>int</td><td>设备id</td></tr>
+            <tr><td>netStatus</td><td>int</td><td>0未知 2离线 1在线</td></tr>
+            <tr><td>eleStatus</td><td>int</td><td>0未知 2断电 1通电</td></tr>
+            <tr><td>isForbidden</td><td>int</td><td>0未锁定 1锁定</td></tr>
+            <tr><td>address</td><td>string</td><td>地址</td></tr>
+            <tr><td>nickName</td><td>string</td><td>设备名称</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-card" id="api-getAllDeviceNetStatusNewUpdate">
+      <div class="api-card-header" onclick="toggleCard(this)"><span class="method post">POST</span><span class="title">查询最近上下线设备</span><span class="path">/hiApi/getAllDeviceNetStatusNewUpdate</span><span class="toggle">&#9660;</span></div>
+      <div class="api-card-body">
+        <div class="info-block"><div class="desc">查询最近一段时间内，上下线状态有变化的设备</div></div>
+        <div class="info-block"><div class="lbl">请求URL</div><div class="url">https://www.hsh.com/hiApi/getAllDeviceNetStatusNewUpdate</div></div>
+        <div class="info-block">
+          <div class="lbl">请求参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>必选</th><th>描述</th></tr></thead><tbody>
+            <tr><td>companyId</td><td>int</td><td class="required-yes">是</td><td>公司id</td></tr>
+            <tr><td>minutes</td><td>int</td><td class="required-yes">是</td><td>查询最近N分钟内变化的设备</td></tr>
+            <tr><td colspan="4" style="color:var(--text-secondary);text-align:center">+ 公共请求参数</td></tr>
+          </tbody></table>
+        </div>
+        <div class="info-block">
+          <div class="lbl">返回参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>描述</th></tr></thead><tbody>
+            <tr><td>code</td><td>int</td><td>设备id</td></tr>
+            <tr><td>netStatus</td><td>int</td><td>0未知 2离线 1在线</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-card" id="api-getDeviceNetLog">
+      <div class="api-card-header" onclick="toggleCard(this)"><span class="method post">POST</span><span class="title">查询设备网络记录</span><span class="path">/hiApi/getDeviceNetLog</span><span class="toggle">&#9660;</span></div>
+      <div class="api-card-body">
+        <div class="info-block"><div class="desc">查询某段时间内设备的网络情况</div></div>
+        <div class="info-block"><div class="lbl">请求URL</div><div class="url">https://www.hsh.com/hiApi/getDeviceNetLog</div></div>
+        <div class="info-block">
+          <div class="lbl">请求参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>必选</th><th>描述</th></tr></thead><tbody>
+            <tr><td>companyId</td><td>int</td><td class="required-yes">是</td><td>公司id</td></tr>
+            <tr><td>deviceCode</td><td>string</td><td class="required-yes">是</td><td>设备编码</td></tr>
+            <tr><td>startTime</td><td>string</td><td class="required-yes">是</td><td>开始时间</td></tr>
+            <tr><td>endTime</td><td>string</td><td class="required-yes">是</td><td>结束时间</td></tr>
+            <tr><td>start</td><td>int</td><td class="required-yes">是</td><td>分页开始</td></tr>
+            <tr><td>length</td><td>int</td><td class="required-yes">是</td><td>分页长度</td></tr>
+            <tr><td colspan="4" style="color:var(--text-secondary);text-align:center">+ 公共请求参数</td></tr>
+          </tbody></table>
+        </div>
+        <div class="info-block">
+          <div class="lbl">返回参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>描述</th></tr></thead><tbody>
+            <tr><td>createtime</td><td>long</td><td>时间</td></tr>
+            <tr><td>pingcount</td><td>int</td><td>ping总次数（30秒/次，6次一条记录）</td></tr>
+            <tr><td>discardcount</td><td>int</td><td>丢包数</td></tr>
+            <tr><td>maxdelay</td><td>int</td><td>最大延迟</td></tr>
+            <tr><td>advdelay</td><td>int</td><td>平均延迟</td></tr>
+            <tr><td>netType</td><td>string</td><td>网络类型（4G;2G）</td></tr>
+            <tr><td>netQuality</td><td>string</td><td>信号强度 1-4</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-card" id="api-openDeviceDoor">
+      <div class="api-card-header" onclick="toggleCard(this)"><span class="method post">POST</span><span class="title">设备开门</span><span class="path">/hiApi/openDeviceDoor</span><span class="toggle">&#9660;</span></div>
+      <div class="api-card-body">
+        <div class="info-block"><div class="desc">控制消费者或补货员开关门</div></div>
+        <div class="info-block"><div class="notice">发送开锁成功不代表开门成功，终端可能存在网络重启等未开锁情况。</div></div>
+        <div class="info-block"><div class="lbl">请求URL</div><div class="url">https://www.hsh.com/hiApi/openDeviceDoor</div></div>
+        <div class="info-block">
+          <div class="lbl">请求参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>必选</th><th>描述</th></tr></thead><tbody>
+            <tr><td>userId</td><td>String</td><td class="required-yes">是</td><td>用户ID</td></tr>
+            <tr><td>doorNum</td><td>Int</td><td class="required-no">否</td><td>门编号（单门柜不传，双门柜1或2）</td></tr>
+            <tr><td>deviceCode</td><td>String</td><td class="required-yes">是</td><td>设备id</td></tr>
+            <tr><td>type</td><td>String</td><td class="required-yes">是</td><td>用户类型: 1用户 2补货员</td></tr>
+            <tr><td>payType</td><td>int</td><td class="required-yes">是</td><td>固定 0</td></tr>
+            <tr><td colspan="4" style="color:var(--text-secondary);text-align:center">+ 公共请求参数</td></tr>
+          </tbody></table>
+        </div>
+        <div class="info-block">
+          <div class="lbl">返回参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>描述</th></tr></thead><tbody>
+            <tr><td>resultMsg</td><td>string</td><td>唯一标识（与关门、订单回调的 requestSerial 一致）</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-card" id="api-forbiddenDevice">
+      <div class="api-card-header" onclick="toggleCard(this)"><span class="method post">POST</span><span class="title">锁定/解锁设备</span><span class="path">/hiApi/forbiddenDevice</span><span class="toggle">&#9660;</span></div>
+      <div class="api-card-body">
+        <div class="info-block"><div class="desc">出现异常情况时，禁用设备</div></div>
+        <div class="info-block"><div class="lbl">请求URL</div><div class="url">https://www.hsh.com/hiApi/forbiddenDevice</div></div>
+        <div class="info-block">
+          <div class="lbl">请求参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>必选</th><th>描述</th></tr></thead><tbody>
+            <tr><td>deviceCode</td><td>string</td><td class="required-yes">是</td><td>设备ID（多个用逗号隔开）</td></tr>
+            <tr><td>companyId</td><td>int</td><td class="required-yes">是</td><td>企业ID</td></tr>
+            <tr><td>type</td><td>int</td><td class="required-yes">是</td><td>0解锁 1锁定</td></tr>
+            <tr><td colspan="4" style="color:var(--text-secondary);text-align:center">+ 公共请求参数</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-card" id="api-rebootDevices">
+      <div class="api-card-header" onclick="toggleCard(this)"><span class="method post">POST</span><span class="title">重启设备</span><span class="path">/hiApi/rebootDevices</span><span class="toggle">&#9660;</span></div>
+      <div class="api-card-body">
+        <div class="info-block"><div class="desc">远程重启设备</div></div>
+        <div class="info-block"><div class="notice">调用后设备会立即重启，重启需要 5-10 分钟。</div></div>
+        <div class="info-block"><div class="lbl">请求URL</div><div class="url">https://www.hsh.com/hiApi/rebootDevices</div></div>
+        <div class="info-block">
+          <div class="lbl">请求参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>必选</th><th>描述</th></tr></thead><tbody>
+            <tr><td>deviceCode</td><td>string</td><td class="required-yes">是</td><td>设备ID（多个用逗号隔开）</td></tr>
+            <tr><td>companyId</td><td>int</td><td class="required-yes">是</td><td>企业ID</td></tr>
+            <tr><td colspan="4" style="color:var(--text-secondary);text-align:center">+ 公共请求参数</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 回调通知 -->
+  <section class="section" id="sec-callback">
+    <div class="section-header"><h2>回调通知</h2><span class="badge">4 个接口</span></div>
+
+    <div class="api-card" id="api-callback-door-open">
+      <div class="api-card-header" onclick="toggleCard(this)"><span class="method callback">回调</span><span class="title">设备开门通知</span><span class="path">您提供回调地址</span><span class="toggle">&#9660;</span></div>
+      <div class="api-card-body">
+        <div class="info-block"><div class="desc">设备开门后平台推送开门通知</div></div>
+        <div class="info-block">
+          <div class="lbl">回调参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>必选</th><th>描述</th></tr></thead><tbody>
+            <tr><td>userId</td><td>String</td><td class="required-yes">是</td><td>用户ID</td></tr>
+            <tr><td>deviceCode</td><td>String</td><td class="required-yes">是</td><td>设备id</td></tr>
+            <tr><td>requestSerial</td><td>string</td><td class="required-yes">是</td><td>开门返回的 resultMsg</td></tr>
+            <tr><td colspan="4" style="color:var(--text-secondary);text-align:center">+ 公共请求参数</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-card" id="api-callback-door-close">
+      <div class="api-card-header" onclick="toggleCard(this)"><span class="method callback">回调</span><span class="title">设备关门通知</span><span class="path">您提供回调地址</span><span class="toggle">&#9660;</span></div>
+      <div class="api-card-body">
+        <div class="info-block"><div class="desc">设备关门后平台推送关门通知</div></div>
+        <div class="info-block">
+          <div class="lbl">回调参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>必选</th><th>描述</th></tr></thead><tbody>
+            <tr><td>userId</td><td>String</td><td class="required-yes">是</td><td>用户ID</td></tr>
+            <tr><td>deviceCode</td><td>String</td><td class="required-yes">是</td><td>设备id</td></tr>
+            <tr><td>isOpenDoor</td><td>int</td><td class="required-yes">是</td><td>0未曾开门 1开过门</td></tr>
+            <tr><td>requestSerial</td><td>string</td><td class="required-yes">是</td><td>开门返回的 resultMsg</td></tr>
+            <tr><td colspan="4" style="color:var(--text-secondary);text-align:center">+ 公共请求参数</td></tr>
+          </tbody></table>
+        </div>
+        <div class="info-block"><div class="notice">锁未开或开锁中重启等不会有关门回调，通过3分钟内是否有订单回调判断。</div></div>
+      </div>
+    </div>
+
+    <div class="api-card" id="api-callback-goods-review">
+      <div class="api-card-header" onclick="toggleCard(this)"><span class="method callback">回调</span><span class="title">新品建模审核结果通知</span><span class="path">您提供回调地址</span><span class="toggle">&#9660;</span></div>
+      <div class="api-card-body">
+        <div class="info-block"><div class="desc">新商品审核结果回调通知</div></div>
+        <div class="info-block">
+          <div class="lbl">回调参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>必选</th><th>描述</th></tr></thead><tbody>
+            <tr><td>outGoodId</td><td>String</td><td class="required-yes">是</td><td>外部商品编号</td></tr>
+            <tr><td>goodsId</td><td>string</td><td class="required-yes">是</td><td>小麦商品编号</td></tr>
+            <tr><td>goodsName</td><td>string</td><td class="required-yes">是</td><td>商品名称</td></tr>
+            <tr><td>code</td><td>string</td><td class="required-yes">是</td><td>审核结果：666通过 444不通过</td></tr>
+            <tr><td>msg</td><td>string</td><td class="required-yes">是</td><td>审核消息</td></tr>
+            <tr><td colspan="4" style="color:var(--text-secondary);text-align:center">+ 公共请求参数</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-card" id="api-callback-order">
+      <div class="api-card-header" onclick="toggleCard(this)"><span class="method callback">回调</span><span class="title">订单回调</span><span class="path">您提供回调地址</span><span class="toggle">&#9660;</span></div>
+      <div class="api-card-body">
+        <div class="info-block"><div class="desc">消费者购物完成后推送订单到第三方系统（POST / JSON）</div></div>
+        <div class="info-block">
+          <div class="lbl">回调参数</div>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><pre>{
+  "deviceCode": "2018",
+  "goodsList": [{
+    "goodsId": 1, "goodsNum": 1,
+    "goodsPrice": 0, "goodsAmount": 0,
+    "goodsPromotionAmount": 0
+  }],
+  "orderAmount": 0.6,
+  "orderCode": "447044665082904576",
+  "productAmount": 1,
+  "promotionAmount": 0.4,
+  "requestSerial": "1526625397643",
+  "exParams": "{\"key\":\"xxxxx\"}"
+}</pre></div>
+        </div>
+        <div class="info-block">
+          <div class="lbl">参数说明</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>描述</th></tr></thead><tbody>
+            <tr><td>deviceCode</td><td>string</td><td>设备id</td></tr>
+            <tr><td>goodsList</td><td>array</td><td>商品信息列表</td></tr>
+            <tr><td>- goodsId</td><td>int</td><td>云库商品id</td></tr>
+            <tr><td>- goodsNum</td><td>int</td><td>商品数量</td></tr>
+            <tr><td>- goodsPrice</td><td>int</td><td>商品单价（优惠前）</td></tr>
+            <tr><td>- goodsAmount</td><td>int</td><td>商品总价（优惠前）</td></tr>
+            <tr><td>- goodsPromotionAmount</td><td>int</td><td>商品总优惠金额</td></tr>
+            <tr><td>orderCode</td><td>string</td><td>订单编号</td></tr>
+            <tr><td>productAmount</td><td>double</td><td>订单原价</td></tr>
+            <tr><td>orderAmount</td><td>double</td><td>订单实价（优惠后）</td></tr>
+            <tr><td>exParams</td><td>string</td><td>其他信息 JSON（videoUrl, tag, userPhone）</td></tr>
+            <tr><td>requestSerial</td><td>string</td><td>开门返回的 resultMsg</td></tr>
+          </tbody></table>
+        </div>
+        <div class="info-block"><div class="notice">1. 异常订单 goodsId=2 标识"疑似非友好行为"；<br>2. 回调有重发机制，请根据订单号去重。</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 商品管理 -->
+  <section class="section" id="sec-product">
+    <div class="section-header"><h2>商品管理</h2><span class="badge">10 个接口</span></div>
+
+    <div class="api-card" id="api-searchGoods">
+      <div class="api-card-header" onclick="toggleCard(this)"><span class="method post">POST</span><span class="title">查询云库商品</span><span class="path">/hiApi/searchGoods</span><span class="toggle">&#9660;</span></div>
+      <div class="api-card-body">
+        <div class="info-block"><div class="desc">云库 20w+ 商品，查询是否存在。不存在请通过「新商品建模」提交。</div></div>
+        <div class="info-block"><div class="lbl">请求URL</div><div class="url">https://www.hsh.com/hiApi/searchGoods</div></div>
+        <div class="info-block">
+          <div class="lbl">请求参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>必选</th><th>描述</th></tr></thead><tbody>
+            <tr><td>goodName</td><td>string</td><td class="required-no">否</td><td>商品名称</td></tr>
+            <tr><td>goodId</td><td>int</td><td class="required-no">否</td><td>商品内部id</td></tr>
+            <tr><td>type</td><td>int</td><td class="required-yes">是</td><td>1标品 2非标品 0全部</td></tr>
+            <tr><td>start</td><td>int</td><td class="required-yes">是</td><td>开始下标</td></tr>
+            <tr><td>length</td><td>int</td><td class="required-yes">是</td><td>获取个数</td></tr>
+            <tr><td>companyId</td><td>int</td><td class="required-yes">是</td><td>企业ID</td></tr>
+            <tr><td colspan="4" style="color:var(--text-secondary);text-align:center">+ 公共请求参数</td></tr>
+          </tbody></table>
+        </div>
+        <div class="info-block">
+          <div class="lbl">返回参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>描述</th></tr></thead><tbody>
+            <tr><td>goodsId</td><td>int</td><td>云库商品id</td></tr>
+            <tr><td>name</td><td>string</td><td>商品名称</td></tr>
+            <tr><td>barCode</td><td>string</td><td>商品条码</td></tr>
+            <tr><td>status</td><td>int</td><td>1上架 2下架</td></tr>
+            <tr><td>price</td><td>BigDecimal</td><td>价格</td></tr>
+            <tr><td>rawPrice</td><td>BigDecimal</td><td>原价</td></tr>
+            <tr><td>imageUrl</td><td>string</td><td>图片地址</td></tr>
+            <tr><td>lock</td><td>int</td><td>1已失效 其他正常</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-card" id="api-getGoodsDetailInfo">
+      <div class="api-card-header" onclick="toggleCard(this)"><span class="method post">POST</span><span class="title">查询商品详细信息</span><span class="path">/hiApi/getGoodsDetailInfo</span><span class="toggle">&#9660;</span></div>
+      <div class="api-card-body">
+        <div class="info-block"><div class="desc">已知商品ID查询详细信息</div></div>
+        <div class="info-block"><div class="lbl">请求URL</div><div class="url">https://www.hsh.com/hiApi/getGoodsDetailInfo</div></div>
+        <div class="info-block">
+          <div class="lbl">请求参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>必选</th><th>描述</th></tr></thead><tbody>
+            <tr><td>goodsId</td><td>int</td><td class="required-yes">是</td><td>商品内部id</td></tr>
+            <tr><td>companyId</td><td>int</td><td class="required-yes">是</td><td>企业ID</td></tr>
+            <tr><td colspan="4" style="color:var(--text-secondary);text-align:center">+ 公共请求参数</td></tr>
+          </tbody></table>
+        </div>
+        <div class="info-block">
+          <div class="lbl">返回参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>描述</th></tr></thead><tbody>
+            <tr><td>goodsId</td><td>int</td><td>云库商品id</td></tr>
+            <tr><td>name</td><td>string</td><td>商品名称</td></tr>
+            <tr><td>barCode</td><td>string</td><td>条码</td></tr>
+            <tr><td>multiImageUrl</td><td>List&lt;String&gt;</td><td>所有图片（含主图）</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-card" id="api-upload_photo">
+      <div class="api-card-header" onclick="toggleCard(this)"><span class="method post">POST</span><span class="title">上传图片（抠图去背景）</span><span class="path">/hiApi/upload_photo</span><span class="toggle">&#9660;</span></div>
+      <div class="api-card-body">
+        <div class="info-block"><div class="desc">新商品建模前上传图片</div></div>
+        <div class="info-block"><div class="lbl">请求URL</div><div class="url">https://www.hsh.com/hiApi/upload_photo</div></div>
+        <div class="info-block">
+          <div class="lbl">请求参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>必选</th><th>描述</th></tr></thead><tbody>
+            <tr><td>fileName</td><td>string</td><td class="required-yes">是</td><td>图片名称</td></tr>
+            <tr><td>isRemoveBG</td><td>boolean</td><td class="required-yes">是</td><td>是否去背景，主图需要去</td></tr>
+            <tr><td>companyId</td><td>int</td><td class="required-yes">是</td><td>企业ID</td></tr>
+            <tr><td>goodsImage</td><td>MultipartFile</td><td class="required-yes">是</td><td>图片文件（不参与签名）</td></tr>
+            <tr><td colspan="4" style="color:var(--text-secondary);text-align:center">+ 公共请求参数</td></tr>
+          </tbody></table>
+        </div>
+        <div class="info-block"><div class="desc">resultMsg 返回图片地址</div></div>
+      </div>
+    </div>
+
+    <div class="api-card" id="api-submitGood">
+      <div class="api-card-header" onclick="toggleCard(this)"><span class="method post">POST</span><span class="title">新品建模申请（提交/修改）</span><span class="path">/hiApi/submitGood</span><span class="toggle">&#9660;</span></div>
+      <div class="api-card-body">
+        <div class="info-block"><div class="desc">提交新商品或修改被驳回的商品</div></div>
+        <div class="info-block"><div class="lbl">请求URL</div><div class="url">https://www.hsh.com/hiApi/submitGood</div></div>
+        <div class="info-block">
+          <div class="lbl">请求参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>必选</th><th>描述</th></tr></thead><tbody>
+            <tr><td>outGoodId</td><td>string</td><td class="required-yes">是</td><td>外部商品编号</td></tr>
+            <tr><td>goodName</td><td>string</td><td class="required-yes">是</td><td>商品名称</td></tr>
+            <tr><td>price</td><td>string</td><td class="required-yes">是</td><td>单价（元）</td></tr>
+            <tr><td>type</td><td>int</td><td class="required-yes">是</td><td>1标品 2非标品</td></tr>
+            <tr><td>sku</td><td>string</td><td class="required-yes">是</td><td>规格</td></tr>
+            <tr><td>weight</td><td>int</td><td class="required-yes">是</td><td>5个商品重量和，非标品固定5</td></tr>
+            <tr><td>categoryId</td><td>int</td><td class="required-yes">是</td><td>商品分类（见枚举）</td></tr>
+            <tr><td>barcode</td><td>string</td><td class="required-yes">是</td><td>条形码，非标品为空</td></tr>
+            <tr><td>imageUrl1</td><td>string</td><td class="required-yes">是</td><td>主图（去背景）</td></tr>
+            <tr><td>imageUrl2~5</td><td>string</td><td class="required-yes">是</td><td>其他图片</td></tr>
+            <tr><td>submitType</td><td>int</td><td class="required-yes">是</td><td>1新增 2驳回后重新提交</td></tr>
+            <tr><td>companyId</td><td>int</td><td class="required-yes">是</td><td>公司id</td></tr>
+            <tr><td colspan="4" style="color:var(--text-secondary);text-align:center">+ 公共请求参数</td></tr>
+          </tbody></table>
+        </div>
+        <div class="info-block">
+          <div class="lbl">商品分类枚举</div>
+          <div class="desc">1:休闲零食 2:饮品 3:生鲜 4:奶制品 5:方便食品 7:面包蛋糕 8:烟酒 9:日用品 10:其他</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-card" id="api-getSubmitGoodsList">
+      <div class="api-card-header" onclick="toggleCard(this)"><span class="method post">POST</span><span class="title">查询新品建模申请列表</span><span class="path">/hiApi/getSubmitGoodsList</span><span class="toggle">&#9660;</span></div>
+      <div class="api-card-body">
+        <div class="info-block"><div class="lbl">请求URL</div><div class="url">https://www.hsh.com/hiApi/getSubmitGoodsList</div></div>
+        <div class="info-block">
+          <div class="lbl">请求参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>必选</th><th>描述</th></tr></thead><tbody>
+            <tr><td>outGoodsId</td><td>string</td><td class="required-no">否</td><td>外部商品编号</td></tr>
+            <tr><td>goodName</td><td>string</td><td class="required-no">否</td><td>商品名称</td></tr>
+            <tr><td>status</td><td>string</td><td class="required-no">否</td><td>1通过 0审核中 -1不通过</td></tr>
+            <tr><td>companyId</td><td>int</td><td class="required-yes">是</td><td>公司id</td></tr>
+            <tr><td>start</td><td>int</td><td class="required-yes">是</td><td>分页开始</td></tr>
+            <tr><td>length</td><td>int</td><td class="required-yes">是</td><td>分页长度</td></tr>
+            <tr><td colspan="4" style="color:var(--text-secondary);text-align:center">+ 公共请求参数</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-card" id="api-onlineDeviceFloorGood">
+      <div class="api-card-header" onclick="toggleCard(this)"><span class="method post">POST</span><span class="title">商品上架到货道</span><span class="path">/hiApi/onlineDeviceFloorGood</span><span class="toggle">&#9660;</span></div>
+      <div class="api-card-body">
+        <div class="info-block"><div class="desc">将商品上架至设备对应货道</div></div>
+        <div class="info-block"><div class="lbl">请求URL</div><div class="url">https://www.hsh.com/hiApi/onlineDeviceFloorGood</div></div>
+        <div class="info-block">
+          <div class="lbl">请求参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>必选</th><th>描述</th></tr></thead><tbody>
+            <tr><td>deviceCode</td><td>string</td><td class="required-yes">是</td><td>设备ID</td></tr>
+            <tr><td>companyId</td><td>int</td><td class="required-yes">是</td><td>公司id</td></tr>
+            <tr><td>goodId</td><td>int</td><td class="required-yes">是</td><td>商品编号（云库）</td></tr>
+            <tr><td>row</td><td>int</td><td class="required-yes">是</td><td>层号（1~6），最上为第1层</td></tr>
+            <tr><td>col</td><td>int</td><td class="required-yes">是</td><td>列，固定传1</td></tr>
+            <tr><td colspan="4" style="color:var(--text-secondary);text-align:center">+ 公共请求参数</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-card" id="api-batchOnlineDeviceFloorGood">
+      <div class="api-card-header" onclick="toggleCard(this)"><span class="method post">POST</span><span class="title">批量上架</span><span class="path">/hiApi/batchOnlineDeviceFloorGood</span><span class="toggle">&#9660;</span></div>
+      <div class="api-card-body">
+        <div class="info-block"><div class="desc">批量上架，goodIds/rows/cols 用逗号隔开需一一对应</div></div>
+        <div class="info-block"><div class="lbl">请求URL</div><div class="url">https://www.hsh.com/hiApi/batchOnlineDeviceFloorGood</div></div>
+        <div class="info-block">
+          <div class="lbl">请求参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>必选</th><th>描述</th></tr></thead><tbody>
+            <tr><td>deviceCode</td><td>string</td><td class="required-yes">是</td><td>设备ID</td></tr>
+            <tr><td>companyId</td><td>int</td><td class="required-yes">是</td><td>公司id</td></tr>
+            <tr><td>goodIds</td><td>string</td><td class="required-yes">是</td><td>商品id，逗号分隔</td></tr>
+            <tr><td>rows</td><td>string</td><td class="required-yes">是</td><td>层号，逗号分隔</td></tr>
+            <tr><td>cols</td><td>string</td><td class="required-yes">是</td><td>固定1，逗号分隔</td></tr>
+            <tr><td colspan="4" style="color:var(--text-secondary);text-align:center">+ 公共请求参数</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-card" id="api-offlineDeviceFloorGood">
+      <div class="api-card-header" onclick="toggleCard(this)"><span class="method post">POST</span><span class="title">商品下架</span><span class="path">/hiApi/offlineDeviceFloorGood</span><span class="toggle">&#9660;</span></div>
+      <div class="api-card-body">
+        <div class="info-block"><div class="desc">将设备某个货道商品下架</div></div>
+        <div class="info-block"><div class="lbl">请求URL</div><div class="url">https://www.hsh.com/hiApi/offlineDeviceFloorGood</div></div>
+        <div class="info-block">
+          <div class="lbl">请求参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>必选</th><th>描述</th></tr></thead><tbody>
+            <tr><td>deviceCode</td><td>string</td><td class="required-yes">是</td><td>设备ID</td></tr>
+            <tr><td>companyId</td><td>int</td><td class="required-yes">是</td><td>企业ID</td></tr>
+            <tr><td>goodId</td><td>int</td><td class="required-yes">是</td><td>商品编号（云库）</td></tr>
+            <tr><td>row</td><td>int</td><td class="required-yes">是</td><td>层号（1-6）</td></tr>
+            <tr><td>col</td><td>int</td><td class="required-yes">是</td><td>列号，固定传1</td></tr>
+            <tr><td colspan="4" style="color:var(--text-secondary);text-align:center">+ 公共请求参数</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-card" id="api-batchOfflineDeviceFloorGood">
+      <div class="api-card-header" onclick="toggleCard(this)"><span class="method post">POST</span><span class="title">批量下架</span><span class="path">/hiApi/batchOfflineDeviceFloorGood</span><span class="toggle">&#9660;</span></div>
+      <div class="api-card-body">
+        <div class="info-block"><div class="desc">批量下架，goodIds/rows/cols 逗号隔开需一一对应</div></div>
+        <div class="info-block"><div class="lbl">请求URL</div><div class="url">https://www.hsh.com/hiApi/batchOfflineDeviceFloorGood</div></div>
+        <div class="info-block">
+          <div class="lbl">请求参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>必选</th><th>描述</th></tr></thead><tbody>
+            <tr><td>deviceCode</td><td>string</td><td class="required-yes">是</td><td>设备ID</td></tr>
+            <tr><td>companyId</td><td>int</td><td class="required-yes">是</td><td>公司id</td></tr>
+            <tr><td>goodIds</td><td>string</td><td class="required-yes">是</td><td>商品id，逗号分隔</td></tr>
+            <tr><td>rows</td><td>string</td><td class="required-yes">是</td><td>层号，逗号分隔</td></tr>
+            <tr><td>cols</td><td>string</td><td class="required-yes">是</td><td>固定传1，逗号分隔</td></tr>
+            <tr><td colspan="4" style="color:var(--text-secondary);text-align:center">+ 公共请求参数</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-card" id="api-getDeviceFloorGood">
+      <div class="api-card-header" onclick="toggleCard(this)"><span class="method post">POST</span><span class="title">查询出售中商品</span><span class="path">/hiApi/getDeviceFloorGood</span><span class="toggle">&#9660;</span></div>
+      <div class="api-card-body">
+        <div class="info-block"><div class="desc">获取设备正在上架的商品情况</div></div>
+        <div class="info-block"><div class="lbl">请求URL</div><div class="url">https://www.hsh.com/hiApi/getDeviceFloorGood</div></div>
+        <div class="info-block">
+          <div class="lbl">请求参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>必选</th><th>描述</th></tr></thead><tbody>
+            <tr><td>deviceCode</td><td>string</td><td class="required-yes">是</td><td>设备ID</td></tr>
+            <tr><td>companyId</td><td>int</td><td class="required-yes">是</td><td>企业ID</td></tr>
+            <tr><td colspan="4" style="color:var(--text-secondary);text-align:center">+ 公共请求参数</td></tr>
+          </tbody></table>
+        </div>
+        <div class="info-block">
+          <div class="lbl">返回参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>描述</th></tr></thead><tbody>
+            <tr><td>goodsId</td><td>int</td><td>商品ID（云库）</td></tr>
+            <tr><td>price</td><td>double</td><td>商品价格</td></tr>
+            <tr><td>name</td><td>string</td><td>商品名称</td></tr>
+            <tr><td>defaultStore</td><td>int</td><td>设备容量（满排面库存）</td></tr>
+            <tr><td>store</td><td>int</td><td>实时库存（剩余）</td></tr>
+            <tr><td>floorIndex</td><td>int</td><td>层号，最上为第1层</td></tr>
+            <tr><td>colIndex</td><td>int</td><td>列号，最左为第1列</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 订单管理 -->
+  <section class="section" id="sec-order">
+    <div class="section-header"><h2>订单管理</h2><span class="badge">1 个接口</span></div>
+
+    <div class="api-card" id="api-getOnlineGoodsByOrderCode">
+      <div class="api-card-header" onclick="toggleCard(this)"><span class="method post">POST</span><span class="title">订单商品上架快照</span><span class="path">/hiApi/getOnlineGoodsByOrderCode</span><span class="toggle">&#9660;</span></div>
+      <div class="api-card-body">
+        <div class="info-block"><div class="desc">查看购物时设备上架的商品信息</div></div>
+        <div class="info-block"><div class="lbl">请求URL</div><div class="url">https://www.hsh.com/hiApi/getOnlineGoodsByOrderCode</div></div>
+        <div class="info-block">
+          <div class="lbl">请求参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>必选</th><th>描述</th></tr></thead><tbody>
+            <tr><td>companyId</td><td>int</td><td class="required-yes">是</td><td>企业ID</td></tr>
+            <tr><td>orderCode</td><td>string</td><td class="required-yes">是</td><td>订单号</td></tr>
+            <tr><td colspan="4" style="color:var(--text-secondary);text-align:center">+ 公共请求参数</td></tr>
+          </tbody></table>
+        </div>
+        <div class="info-block">
+          <div class="lbl">返回参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>描述</th></tr></thead><tbody>
+            <tr><td>floorIndex</td><td>int</td><td>层号，最上为第1层</td></tr>
+            <tr><td>colIndex</td><td>int</td><td>列号，最左为第1列</td></tr>
+            <tr><td>goodsId</td><td>int</td><td>商品ID</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 理货管理 -->
+  <section class="section" id="sec-tally">
+    <div class="section-header"><h2>理货管理</h2><span class="badge">2 个接口</span></div>
+
+    <div class="api-card" id="api-getTallyList">
+      <div class="api-card-header" onclick="toggleCard(this)"><span class="method post">POST</span><span class="title">查询理货记录列表</span><span class="path">/hiApi/getTallyList</span><span class="toggle">&#9660;</span></div>
+      <div class="api-card-body">
+        <div class="info-block"><div class="desc">查询理货记录列表，获取指定时间段内的理货汇总信息</div></div>
+        <div class="info-block"><div class="lbl">请求URL</div><div class="url">https://www.hsh.com/hiApi/getTallyList</div></div>
+        <div class="info-block">
+          <div class="lbl">请求参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>必选</th><th>描述</th></tr></thead><tbody>
+            <tr><td>companyId</td><td>int</td><td class="required-yes">是</td><td>企业ID</td></tr>
+            <tr><td>deviceCode</td><td>string</td><td class="required-no">否</td><td>设备ID，不传则查询所有设备</td></tr>
+            <tr><td>startTime</td><td>string</td><td class="required-no">否</td><td>开始时间</td></tr>
+            <tr><td>endTime</td><td>string</td><td class="required-no">否</td><td>结束时间</td></tr>
+            <tr><td>start</td><td>int</td><td class="required-yes">是</td><td>分页开始</td></tr>
+            <tr><td>length</td><td>int</td><td class="required-yes">是</td><td>分页长度</td></tr>
+            <tr><td colspan="4" style="color:var(--text-secondary);text-align:center">+ 公共请求参数</td></tr>
+          </tbody></table>
+        </div>
+        <div class="info-block">
+          <div class="lbl">返回参数说明</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>描述</th></tr></thead><tbody>
+            <tr><td>createTime</td><td>string</td><td>创建时间</td></tr>
+            <tr><td>storeName</td><td>string</td><td>店铺名称</td></tr>
+            <tr><td>deviceCode</td><td>string</td><td>设备ID</td></tr>
+            <tr><td>deliveryImage</td><td>string</td><td>配送图片地址</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-card" id="api-getTallyDetail">
+      <div class="api-card-header" onclick="toggleCard(this)"><span class="method post">POST</span><span class="title">查询理货详情</span><span class="path">/hiApi/getTallyDetail</span><span class="toggle">&#9660;</span></div>
+      <div class="api-card-body">
+        <div class="info-block"><div class="desc">查询某条理货记录的详细信息，包含具体商品的上下货情况</div></div>
+        <div class="info-block"><div class="lbl">请求URL</div><div class="url">https://www.hsh.com/hiApi/getTallyDetail</div></div>
+        <div class="info-block">
+          <div class="lbl">请求参数</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>必选</th><th>描述</th></tr></thead><tbody>
+            <tr><td>companyId</td><td>int</td><td class="required-yes">是</td><td>企业ID</td></tr>
+            <tr><td>tallyId</td><td>string</td><td class="required-yes">是</td><td>理货记录ID</td></tr>
+            <tr><td colspan="4" style="color:var(--text-secondary);text-align:center">+ 公共请求参数</td></tr>
+          </tbody></table>
+        </div>
+        <div class="info-block">
+          <div class="lbl">返回参数说明</div>
+          <table class="api-table"><thead><tr><th>参数名</th><th>类型</th><th>描述</th></tr></thead><tbody>
+            <tr><td>createTime</td><td>string</td><td>创建时间</td></tr>
+            <tr><td>storeName</td><td>string</td><td>店铺名称</td></tr>
+            <tr><td>deliveryImage</td><td>string</td><td>配送图片地址</td></tr>
+            <tr><td>detailList</td><td>array</td><td>理货详情列表</td></tr>
+            <tr><td>- barCode</td><td>string</td><td>商品条码</td></tr>
+            <tr><td>- goodsName</td><td>string</td><td>商品名称</td></tr>
+            <tr><td>- quantity</td><td>int</td><td>数量（正数为上货，负数为下货）</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div> id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">&#9650;</button>
+
+<script>
+function toggleCard(header) { header.parentElement.classList.toggle('open'); }
+function toggleGroup(el) { el.parentElement.classList.toggle('collapsed'); }
+function navScrollTo(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  var headerH = 70;
+  var top = el.getBoundingClientRect().top + window.pageYOffset - headerH;
+  window.scrollTo({ top: top, behavior: 'smooth' });
+  document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+  var navItem = document.querySelector('.nav-item[data-target="' + id + '"]');
+  if (navItem) navItem.classList.add('active');
+}
+function switchTab(tab, group) {
+  var bar = tab.parentElement;
+  var idx = Array.from(bar.children).indexOf(tab);
+  bar.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  tab.classList.add('active');
+  var contents = bar.parentElement.querySelectorAll('.tab-content.' + group);
+  contents.forEach(function(c, i) { c.classList.toggle('active', i === idx); });
+}
+function copyCode(btn) {
+  var pre = btn.parentElement.querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent).then(function() {
+    btn.textContent = '已复制';
+    setTimeout(function() { btn.textContent = '复制'; }, 1500);
+  });
+}
+
+var searchData = [
+  { label:'查询单个设备信息', cat:'设备管理', id:'api-getDevicesInfo', path:'/hiApi/getDevicesInfo' },
+  { label:'所有设备信息', cat:'设备管理', id:'api-getAllDeviceCode', path:'/hiApi/getAllDeviceCode' },
+  { label:'查询最近上下线设备', cat:'设备管理', id:'api-getAllDeviceNetStatusNewUpdate', path:'/hiApi/getAllDeviceNetStatusNewUpdate' },
+  { label:'查询设备网络记录', cat:'设备管理', id:'api-getDeviceNetLog', path:'/hiApi/getDeviceNetLog' },
+  { label:'设备开门', cat:'设备管理', id:'api-openDeviceDoor', path:'/hiApi/openDeviceDoor' },
+  { label:'锁定/解锁设备', cat:'设备管理', id:'api-forbiddenDevice', path:'/hiApi/forbiddenDevice' },
+  { label:'重启设备', cat:'设备管理', id:'api-rebootDevices', path:'/hiApi/rebootDevices' },
+  { label:'设备开门通知', cat:'回调通知', id:'api-callback-door-open', path:'回调' },
+  { label:'设备关门通知', cat:'回调通知', id:'api-callback-door-close', path:'回调' },
+  { label:'新品审核结果通知', cat:'回调通知', id:'api-callback-goods-review', path:'回调' },
+  { label:'订单回调', cat:'回调通知', id:'api-callback-order', path:'回调' },
+  { label:'查询云库商品', cat:'商品管理', id:'api-searchGoods', path:'/hiApi/searchGoods' },
+  { label:'查询商品详细信息', cat:'商品管理', id:'api-getGoodsDetailInfo', path:'/hiApi/getGoodsDetailInfo' },
+  { label:'上传图片', cat:'商品管理', id:'api-upload_photo', path:'/hiApi/upload_photo' },
+  { label:'新品建模申请', cat:'商品管理', id:'api-submitGood', path:'/hiApi/submitGood' },
+  { label:'查询新品申请列表', cat:'商品管理', id:'api-getSubmitGoodsList', path:'/hiApi/getSubmitGoodsList' },
+  { label:'商品上架到货道', cat:'商品管理', id:'api-onlineDeviceFloorGood', path:'/hiApi/onlineDeviceFloorGood' },
+  { label:'批量上架', cat:'商品管理', id:'api-batchOnlineDeviceFloorGood', path:'/hiApi/batchOnlineDeviceFloorGood' },
+  { label:'商品下架', cat:'商品管理', id:'api-offlineDeviceFloorGood', path:'/hiApi/offlineDeviceFloorGood' },
+  { label:'批量下架', cat:'商品管理', id:'api-batchOfflineDeviceFloorGood', path:'/hiApi/batchOfflineDeviceFloorGood' },
+  { label:'查询出售中商品', cat:'商品管理', id:'api-getDeviceFloorGood', path:'/hiApi/getDeviceFloorGood' },
+  { label:'订单商品上架快照', cat:'订单管理', id:'api-getOnlineGoodsByOrderCode', path:'/hiApi/getOnlineGoodsByOrderCode' },
+  { label:'查询理货记录列表', cat:'理货管理', id:'api-getTallyList', path:'/hiApi/getTallyList' },
+  { label:'查询理货详情', cat:'理货管理', id:'api-getTallyDetail', path:'/hiApi/getTallyDetail' },
+  { label:'RSA签名认证', cat:'鉴权', id:'sec-rsa-auth', path:'签名认证' },
+  { label:'回调验签机制', cat:'鉴权', id:'sec-callback-auth', path:'回调验签' }
+];
+
+var input = document.getElementById('searchInput');
+var results = document.getElementById('searchResults');
+
+input.addEventListener('input', function() {
+  var q = this.value.trim().toLowerCase();
+  if (!q) { results.classList.remove('active'); return; }
+  var matches = searchData.filter(function(d) {
+    return d.label.toLowerCase().indexOf(q) !== -1 || d.path.toLowerCase().indexOf(q) !== -1 || d.cat.toLowerCase().indexOf(q) !== -1;
+  });
+  if (!matches.length) {
+    var empty = document.createElement('div');
+    empty.style.cssText = 'padding:12px;color:#999;text-align:center';
+    empty.textContent = '无匹配结果';
+    results.textContent = '';
+    results.appendChild(empty);
+    results.classList.add('active');
+    return;
+  }
+  results.textContent = '';
+  var lastCat = '';
+  matches.forEach(function(m) {
+    if (m.cat !== lastCat) {
+      var catEl = document.createElement('div');
+      catEl.className = 'sr-cat';
+      catEl.textContent = m.cat;
+      results.appendChild(catEl);
+      lastCat = m.cat;
+    }
+    var a = document.createElement('div');
+    a.className = 'sr-item';
+    a.textContent = m.label + '  ' + m.path;
+    a.setAttribute('data-id', m.id);
+    a.addEventListener('click', function() {
+      navScrollTo(this.getAttribute('data-id'));
+      results.classList.remove('active');
+      input.value = '';
+    });
+    results.appendChild(a);
+  });
+  results.classList.add('active');
+});
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.search-box')) results.classList.remove('active');
+});
+
+window.addEventListener('scroll', function() {
+  document.getElementById('backTop').classList.toggle('show', window.scrollY > 400);
+});
+</script>
+</body>
+</html>
